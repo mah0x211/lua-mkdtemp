@@ -21,53 +21,34 @@
  */
 
 #include <errno.h>
-#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 // lua
 #include <lua_errno.h>
-
-static size_t TMPL_BUFSIZ = PATH_MAX;
-static char *TMPL_BUF     = NULL;
 
 static int mkdtemp_lua(lua_State *L)
 {
     size_t len = 0;
     char *tmpl = (char *)luaL_checklstring(L, 1, &len);
+    char *buf  = lua_newuserdata(L, len + 1);
 
-    if (len > TMPL_BUFSIZ) {
-        lua_pushnil(L);
-        errno = ENAMETOOLONG;
-        lua_errno_new(L, errno, "mkdtemp");
-        return 2;
-    }
-    tmpl      = memcpy(TMPL_BUF, tmpl, len);
-    tmpl[len] = 0;
-
-    if (!mkdtemp(tmpl)) {
+    memcpy(buf, tmpl, len);
+    buf[len] = 0;
+    if (!mkdtemp(buf)) {
         lua_pushnil(L);
         lua_errno_new(L, errno, "mkdtemp");
         return 2;
     }
 
     lua_settop(L, 0);
-    lua_pushlstring(L, tmpl, len);
+    lua_pushlstring(L, buf, len);
     return 1;
 }
 
 LUALIB_API int luaopen_mkdtemp(lua_State *L)
 {
-    long pathmax = pathconf(".", _PC_PATH_MAX);
-
     lua_errno_loadlib(L);
-
-    // set the maximum number of bytes in a pathname
-    if (pathmax != -1) {
-        TMPL_BUFSIZ = pathmax;
-    }
-    // allocate the buffer for mkdtemp
-    TMPL_BUF = lua_newuserdata(L, TMPL_BUFSIZ + 1);
-    // holds until the state closes
-    luaL_ref(L, LUA_REGISTRYINDEX);
-
     lua_pushcfunction(L, mkdtemp_lua);
     return 1;
 }
