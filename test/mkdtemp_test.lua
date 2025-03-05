@@ -35,7 +35,12 @@ assert.is_nil(pathname)
 assert.equal(err.type, errno[err.code])
 
 -- test that return ENAMETOOLONG error
-pathname, err = mkdtemp('./' .. string.rep('f', 1024 * 8))
+local arr = {}
+for i = 1, 1024 do
+    arr[i] = 'foo'
+end
+tmpl = './' .. table.concat(arr, '/') .. '/tempdir_XXXXXX'
+pathname, err = mkdtemp(tmpl)
 assert.is_nil(pathname)
 assert.equal(err.type, errno.ENAMETOOLONG)
 
