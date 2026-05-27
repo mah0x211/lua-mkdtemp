@@ -20,12 +20,14 @@
  *  IN THE SOFTWARE.
  */
 
+// depend
+#include "lua_errno.h"
+// lua
+#include <lauxlib.h>
+// system
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
-// lua
-#include <lua_errno.h>
 
 static int mkdtemp_lua(lua_State *L)
 {
