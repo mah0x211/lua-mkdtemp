@@ -1,6 +1,5 @@
 local assert = require('assert')
 local errno = require('errno')
-local rmdir = require('rmdir')
 local mkdtemp = require('mkdtemp')
 
 --- check if a file or directory exists in this path
@@ -27,7 +26,7 @@ assert.is_string(pathname)
 assert.is_nil(err)
 assert.not_equal(pathname, tmpl)
 assert(isdir(pathname))
-assert(rmdir(pathname, true))
+assert(os.remove(pathname))
 
 -- test that returns an error
 pathname, err = mkdtemp('./foo/bar/baz/tempfile')
